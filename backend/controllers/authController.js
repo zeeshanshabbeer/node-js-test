@@ -11,8 +11,8 @@ const signToken = (id) => {
 };
 
 //send the token
-const createSendToken = (user, statusCode, req, res) => {
-  const token = signToken(user);
+const createSendToken = (result, statusCode, req, res) => {
+  const token = signToken(result.user_id);
 
   res.cookie("jwtToken", token, {
     expires: new Date(
@@ -23,17 +23,16 @@ const createSendToken = (user, statusCode, req, res) => {
   res.status(statusCode).json({
     status: "success",
     token,
-    data: {
-      user,
-    },
+    result,
   });
 };
 //authentication
 exports.protect = catchAsync(async (req, res, next) => {
+
   // 1) Getting token and check of it's there
   let token;
-  if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
-    token = req.headers.authorization.split(" ")[1];
+  if (req.headers.authorization) {
+    token = req.headers.authorization;
   } else if (req.cookies.jwtToken) {
     token = req.cookies.jwtToken;
   }
@@ -52,7 +51,36 @@ exports.protect = catchAsync(async (req, res, next) => {
   }
 });
 
-exports.generateToken=catchAsync(async(req,res,next)=>{
-  const {user_id}=req.body
-  createSendToken(user_id, statusCode, req, res)
-})
+exports.createToken = catchAsync(async (req, res, next) => {
+
+  let myHeaders = new Headers();
+myHeaders.append("Cookie", "csrftoken=em2tGNTcnV3ujmifQ1lNnN3BEJqDEZtz; ig_did=5C6C918F-8643-4BC2-A8A7-179F99280DCE; ig_nrcb=1; mid=Y4WjAwAEAAGL-BidQ6tay-f4r4X0");
+
+let formdata = new FormData();
+formdata.append("client_id", process.env.CLIENT_ID);
+formdata.append("client_secret", process.env.CLIENT_SECRET);
+formdata.append("grant_type", "authorization_code");
+formdata.append("redirect_uri", "https://httpstat.us/200");
+formdata.append("code", req.body.accessKey);
+
+let requestOptions = {
+  method: 'POST',
+  headers: myHeaders,
+  body: formdata,
+  redirect: 'follow'
+};
+
+fetch("https://api.instagram.com/oauth/access_token", requestOptions)
+  .then(response => response.text())
+  .then(result => {
+    result= JSON.parse(result)
+    console.log(result)
+    if(result.error_message){
+      return next(new AppError(result.error_message, 400))
+    }else{
+      createSendToken(result,200, req, res)}
+    })
+  .catch(error => console.log(error));
+
+});
+

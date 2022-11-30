@@ -4,6 +4,8 @@ const mediaController = require("../controllers/mediaController");
 const authController = require("../controllers/authController");
 
 // create blog
-router.post("/postData",authController.protect, mediaController.postData);
+router.post("/postData", mediaController.postData);
+// rcheck authentication
+router.post("/login",authController.protect,mediaController.getData)
 
 module.exports = router;

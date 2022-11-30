@@ -2,14 +2,14 @@ const AppError = require("./../utils/appError");
 
 const sendErrorDev = (err, req, res) => {
   // A) API
-  if (req.originalUrl.startsWith("/user")) {
+  if (req.originalUrl.startsWith("/media")) {
     return res.status(err.statusCode).json({
       status: err.status,
       error: err,
       message: err.message,
       stack: err.stack,
     });
-  } else if (req.originalUrl.startsWith("/blog")) {
+  } else if (req.originalUrl.startsWith("/auth")) {
     return res.status(err.statusCode).json({
       status: err.status,
       error: err,
@@ -26,7 +26,7 @@ const sendErrorDev = (err, req, res) => {
 };
 const sendErrorProd = (err, req, res) => {
   // A) API
-  if (req.originalUrl.startsWith("/user")) {
+  if (req.originalUrl.startsWith("/media")) {
     // A) Operational, trusted error: send message to client
     if (err.isOperational) {
       return res.status(err.statusCode).json({
@@ -42,7 +42,7 @@ const sendErrorProd = (err, req, res) => {
       status: "error",
       message: "Something went very wrong!",
     });
-  } else if (req.originalUrl.startsWith("/blog")) {
+  } else if (req.originalUrl.startsWith("/auth")) {
     // A) Operational, trusted error: send message to client
     if (err.isOperational) {
       return res.status(err.statusCode).json({

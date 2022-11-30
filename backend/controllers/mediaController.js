@@ -3,6 +3,7 @@ const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/appError");
 
 exports.postData = catchAsync(async (req, res, next) => {
+
   const { img_url,caption } = req.body;
   const blog = await Media.findOne({ img_url });
   if (blog) {
@@ -19,8 +20,27 @@ exports.postData = catchAsync(async (req, res, next) => {
     }
   }
 });
+exports.getData = catchAsync(async (req, res, next) => {
+console.log(req.body)
+  let myHeaders = new Headers();
+myHeaders.append("Cookie", "csrftoken=em2tGNTcnV3ujmifQ1lNnN3BEJqDEZtz; ig_did=5C6C918F-8643-4BC2-A8A7-179F99280DCE; ig_nrcb=1; mid=Y4WjAwAEAAGL-BidQ6tay-f4r4X0");
 
-exports.auth= catchAsync(async(req,res,next)=>{
-  
-})
+let requestOptions = {
+  method: 'GET',
+  headers: myHeaders,
+  redirect: 'follow'
+};
+
+fetch(`https://graph.instagram.com/${process.env.USER_ID}/media?access_token=${req.body.access_token}&fields=media_url,caption`, requestOptions)
+  .then(response => response.text())
+  .then(result => {
+    result=JSON.parse(result)
+    res.status(200).json({
+      status: "success",
+      message: result,
+    });
+  })
+  .catch(error => console.log('error', error));
+});
+
 
